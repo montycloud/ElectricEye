@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="db0db1d9-ce43-4336-b32d-fd17bd0a23e7" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/add-ons/electriceye-chatops/cloudformation/ElectricEye_ChatOps_CFN.yml" beforeDir="false" afterPath="$PROJECT_DIR$/add-ons/electriceye-chatops/cloudformation/ElectricEye_ChatOps_CFN.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1jDwAXF4iqsxuSUIzUfEllbCZ9E" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../ClickSoftware/UpdatedSolution/solutions/automation/clicksoftware/sendmessgetoslack.py" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="db0db1d9-ce43-4336-b32d-fd17bd0a23e7" name="Default Changelist" comment="" />
+      <created>1603351826994</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1603351826994</updated>
+      <workItem from="1603351829435" duration="146000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="-1180" y="170" key="FileChooserDialogImpl" timestamp="1603351972475">
+      <screen x="-1920" y="-124" width="1920" height="1080" />
+    </state>
+    <state x="-1180" y="170" key="FileChooserDialogImpl/0.0.1366.768/-1920.-124.1920.1080@-1920.-124.1920.1080" timestamp="1603351972475" />
+  </component>
+</project>
