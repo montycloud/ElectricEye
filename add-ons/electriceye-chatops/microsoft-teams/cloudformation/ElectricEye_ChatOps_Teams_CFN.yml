@@ -15,6 +15,10 @@ Parameters:
     Type: String
     Description: The value for SSM Parameter that gets stored non-encrypted. Below is a dummy value. Replace with actual value
     Default: https://outlook.office.com/webhook/*****
+  SeverityLevel:
+    Type: CommaDelimitedList
+    Description: Choose among CRITICAL,HIGH,MEDIUM
+    Default: 'CRITICAL,HIGH,MEDIUM' 
 Resources:
   SlackWebHookParameter:
     Type: AWS::SSM::Parameter
@@ -108,9 +112,7 @@ Resources:
               Product Name:
                 - Day2SecurityBot
             Severity:
-              Label:
-                - HIGH
-                - CRITICAL
+              Label: !Ref SeverityLevel
       State: "ENABLED"
       Targets: 
         - 
