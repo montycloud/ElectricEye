@@ -60,7 +60,7 @@ Resources:
                       resourceId = str(resources['Id'])
                       teamsMessage = 'A new ' + severityLabel + ' severity finding for ' + resourceId + ' in acccount ' + awsAccountId + ' has been created in Security Hub due to failing the check: ' + electricEyeCheck
                       message = {'text': teamsMessage}
-                      http.request('POST', slackWebhook,  headers=slackHeaders, body=json.dumps(message).encode('utf-8'))
+                      http.request('POST', teamsWebhook,  headers=teamsHeaders, body=json.dumps(message).encode('utf-8'))
   ElectricEyeTeamsChatOpsExecRole:
     Type: AWS::IAM::Role
     Properties:
