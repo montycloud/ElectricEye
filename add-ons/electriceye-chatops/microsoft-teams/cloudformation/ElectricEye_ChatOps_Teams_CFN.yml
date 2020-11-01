@@ -7,10 +7,6 @@ Parameters:
     Type: String
     Description: The name of the SSM Parameter that contains the Teams App Webhook URL for ElectricEye-ChatOps Teams edition
     Default: teamswebhookParam
-  WebHookParameterValue:
-    Type: String
-    Description: The value for SSM Parameter that gets stored non-encrypted. Below is a dummy value. Replace with actual value
-    Default: https://outlook.office.com/webhook/*****
   SeverityLevel:
     Type: CommaDelimitedList
     Description: Choose among CRITICAL,HIGH,MEDIUM
@@ -29,8 +25,6 @@ Resources:
       Environment:
         Variables:
           MS_TEAMS_WEBHOOK_PARAMETER: !Ref WebHookParameterName
-      Layers:
-        - !Ref Python3RequestsLayer
       Code:
         ZipFile: |
           import os
