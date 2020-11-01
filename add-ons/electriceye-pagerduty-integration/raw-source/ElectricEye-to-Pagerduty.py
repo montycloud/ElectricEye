@@ -1,13 +1,14 @@
 import os
 import boto3
 import json
-import requests
+import urllib3
 
 def lambda_handler(event, context):
     # create ssm client
     ssm = boto3.client('ssm')
     # Env var for SSM Param containing PagerDuty integration key
     integrationKeyParam = os.environ['PAGERDUTY_INTEGRATION_KEY_PARAMETER']
+    http = urllib3.PoolManager()
     # retrieve slack webhook from SSM
     try:
         response = ssm.get_parameter(Name=integrationKeyParam,WithDecryption=True)
@@ -62,5 +63,5 @@ def lambda_handler(event, context):
             # this is a static value
             pdEventApiv2Url = 'https://events.pagerduty.com/v2/enqueue'
             # form a request
-            r = requests.post(pdEventApiv2Url, headers=pdHeaders, data=json.dumps(pagerdutyEvent))
+            r=http.request('POST', pdEventApiv2Url, headers=pdHeaders, body=json.dumps(pagerdutyEvent).encode('utf-8'))
             print(r)
