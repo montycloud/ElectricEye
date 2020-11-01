@@ -20,16 +20,6 @@ Parameters:
     Description: Choose among CRITICAL,HIGH,MEDIUM
     Default: 'CRITICAL,HIGH,MEDIUM'  
 Resources:
-  SlackWebHookParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Ref WebHookParameterName
-      Type: String
-      Value: !Ref WebHookParameterValue
-      Tier: Standard
-      Description: Slack Web hook URL
-      Tags:
-        Environment: SecurityBot 
   ElectricEyePagerdutyRRLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
