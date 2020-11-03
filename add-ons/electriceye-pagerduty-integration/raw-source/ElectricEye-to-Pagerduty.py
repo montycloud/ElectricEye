@@ -1,21 +1,22 @@
 import os
 import boto3
 import json
-import requests
+import urllib3
 
 def lambda_handler(event, context):
     # create ssm client
     ssm = boto3.client('ssm')
     # Env var for SSM Param containing PagerDuty integration key
     integrationKeyParam = os.environ['PAGERDUTY_INTEGRATION_KEY_PARAMETER']
+    http = urllib3.PoolManager()
     # retrieve slack webhook from SSM
     try:
-        response = ssm.get_parameter(Name=integrationKeyParam)
+        response = ssm.get_parameter(Name=integrationKeyParam,WithDecryption=True)
         pdIntegrationKey = str(response['Parameter']['Value'])
     except Exception as e:
         print(e)
     for findings in event['detail']['findings']:
-        severityLabel = str(findings['ProductFields']['aws/securityhub/SeverityLabel'])
+        severityLabel = str(findings['Severity']['Label'])
         if severityLabel == 'CRITICAL':
             pdSev = str('critical')
         elif severityLabel == 'HIGH':
@@ -55,13 +56,12 @@ def lambda_handler(event, context):
                 "dedup_key": findingId,
                 "event_action": "trigger"
             }
-            # pass content-type and the integration key headers
-            pdHeaders = { 
+            pdHeaders = {
                 'Content-Type': 'application/json',
                 'X-Routing-Key': pdIntegrationKey
-            }   
+            }
             # this is a static value
             pdEventApiv2Url = 'https://events.pagerduty.com/v2/enqueue'
-            # form a request from the URL, Headers, PagerDuty Event Action, De-Dupe Key and the Payload
-            r = requests.post(pdEventApiv2Url, headers=pdHeaders, data=json.dumps(pagerdutyEvent))
+            # form a request
+            r=http.request('POST', pdEventApiv2Url, headers=pdHeaders, body=json.dumps(pagerdutyEvent).encode('utf-8'))
             print(r)
