@@ -14,6 +14,7 @@ Metadata:
         Parameters:
           - S3BucketName
           - ECRImageURI
+          - PluginNames
       - Label:
           default: SecurityBot Configuration
         Parameters:
@@ -34,6 +35,8 @@ Metadata:
         default: Cron expression to run ECS Fargate Task
       ECRImageURI:
         default: ECR Image URL
+      PluginNames:
+        default: Plugin Names
       VpcCIDR:
         default: Please enter the IP range (CIDR notation) for this VPC
       ElectricEyeScheduledSubnet1CIDR:
@@ -70,6 +73,10 @@ Parameters:
     Description: Please enter the IP range (CIDR notation) for this VPC
     Type: String
     Default: 10.77.0.0/16
+  PluginNames:
+    Description: Names of auditors to be loaded during Fargate task run
+    Type: String
+    Default: 'Amazon_APIGW_Auditor,Amazon_S3_Auditor'
   ElectricEyeScheduledSubnet1CIDR:
     Description: Please enter the IP range (CIDR notation) for the public subnet in
       the first Availability Zone
@@ -422,6 +429,8 @@ Resources:
           Environment:
             - Name: SH_SCRIPTS_BUCKET
               Value: !Ref 'S3BucketName'
+            - Name: PluginNames
+              Value: !Ref 'PluginNames'
           LogConfiguration:
             LogDriver: awslogs
             Options:
