@@ -6,9 +6,7 @@ Metadata:
       - Label:
           default: Application Configuration
         Parameters:
-          - Application
           - Environment
-          - ApplicationId
       - Label:
           default: Artifacts Configuration
         Parameters:
@@ -23,12 +21,8 @@ Metadata:
           - ElectricEyeScheduledSubnet1CIDR
           - ElectricEyeScheduledSubnet2CIDR
     ParameterLabels:
-      Application:
-        default: Application Name
       Environment:
         default: Environment Type such as Prod , QA , STG , DEV
-      ApplicationId:
-        default: To be hidden from customer
       S3BucketName:
         default: S3 Bucket to download Auditors python scripts
       ScheduleExpression:
@@ -46,18 +40,10 @@ Metadata:
         default: Please enter the IP range (CIDR notation) for the public subnet in
           the second Availability Zone
 Parameters:
-  Application:
-    Type: String
-    Default: SecurityBot
-    Description: Application Name
   Environment:
     Description: An environment name that is prefixed to resource names
     Type: String
     Default: dev
-  ApplicationId:
-    Type: String
-    Default: ''
-    Description: Application Id
   S3BucketName:
     Type: String
     Description: Public S3 bucket which holds the artifacts python auditor scripts
