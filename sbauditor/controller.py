@@ -20,7 +20,7 @@ def run_auditor(auditor_name=None, check_name=None, delay=0, outputs=None, outpu
     if not outputs:
         outputs = ["sechub"]
     app = SBAuditor(name="AWS Auditor")
-    app.load_plugins(plugin_name=auditor_name)
+    app.load_plugins(plugin_names=auditor_name)
     findings = list(app.run_checks(requested_check_name=check_name, delay=delay))
     result = process_findings(findings=findings, outputs=outputs, output_file=output_file)
     print(f"Done.")

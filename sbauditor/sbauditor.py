@@ -41,14 +41,16 @@ class SBAuditor(object):
             searchpath=[get_path(search_path)], identifier=self.name
         )
 
-    def load_plugins(self, plugin_name=None):
-        if plugin_name:
+    def load_plugins(self, plugin_names=None):
+        if len(plugin_names) > 4:
+           for plugin_name in plugin_names.split(','):
             try:
                 plugin = self.source.load_plugin(plugin_name)
-                print("plugin name :", plugin_name)
+                print("plugin loaded:", plugin)
             except Exception as e:
                 print(f"Failed to load plugin {plugin_name} with exception {e}")
         else:
+            print("loading all auditors")
             for plugin_name in self.source.list_plugins():
                 try:
                     print("plugin name :",plugin_name)
