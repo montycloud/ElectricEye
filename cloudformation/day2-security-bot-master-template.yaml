@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: This Template will create the supporting infrastructure for ElectricEye
+Description: This Template will create the supporting infrastructure for Day2 SecurityBot
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -34,12 +34,20 @@ Metadata:
       VpcCIDR:
         default: Please enter the IP range (CIDR notation) for this VPC
       ElectricEyeScheduledSubnet1CIDR:
-        default: Please enter the IP range (CIDR notation) for the public subnet in
-          the first Availability Zone
+        default: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
       ElectricEyeScheduledSubnet2CIDR:
-        default: Please enter the IP range (CIDR notation) for the public subnet in
-          the second Availability Zone
+        default: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+      CreateAccountLevelResource:
+        default: To conditionally create ElectricEyeExecutionRole, ElectricEyeTaskRole
+      
 Parameters:
+  CreateAccountLevelResource:
+    Description: 'Based on this field, IAM resources will create in the customer account'
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
   Environment:
     Description: An environment name that is prefixed to resource names
     Type: String
@@ -73,6 +81,8 @@ Parameters:
       the second Availability Zone
     Type: String
     Default: 10.77.20.0/24
+Conditions:
+  CreateAccountLevelResource:  !Equals [ !Ref CreateAccountLevelResource, "true" ]
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -194,8 +204,9 @@ Resources:
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
-  ElectricEyeTaskRole:
+  ElectricEyeTaskRole:   
     Type: AWS::IAM::Role
+    Condition: CreateAccountLevelResource
     Properties:
       Policies:
         - PolicyName: electriceyetaskpolicy
@@ -377,8 +388,9 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action:
               - sts:AssumeRole
-  ElectricEyeExecutionRole:
+  ElectricEyeExecutionRole: 
     Type: AWS::IAM::Role
+    Condition: CreateAccountLevelResource
     Properties:
       Policies:
         - PolicyName: electriceyeexecpolicy
