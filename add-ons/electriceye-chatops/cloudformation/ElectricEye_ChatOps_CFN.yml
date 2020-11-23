@@ -5,7 +5,7 @@ Metadata:
 Parameters:
   WebHookParameterName:
     Type: String
-    Description: The name of the SSM Parameter that contains the Slack App Webhook URL for ElectricEye-ChatOps
+    Description: The names of the SSM Parameter that contains the Slack App Webhook URL for ElectricEye-ChatOps
     Default: slackwebhookParam
   SeverityLevel:
     Type: CommaDelimitedList
@@ -53,7 +53,8 @@ Resources:
                       resourceId = str(resources['Id'])
                       slackMessage = 'A new ' + severityLabel + ' severity finding for ' + resourceId + ' in acccount ' + awsAccountId + ' has been created in Security Hub due to failing the check: ' + electricEyeCheck
                       message = {'text': slackMessage}
-                      http.request('POST', slackWebhook,  headers=slackHeaders, body=json.dumps(message).encode('utf-8'))
+                      for channel in channels:
+                          http.request('POST', slackWebhook,  headers=slackHeaders, body=json.dumps(message).encode('utf-8'))
   ElectricEyeChatOpsExecRole:
     Type: AWS::IAM::Role
     Properties:
