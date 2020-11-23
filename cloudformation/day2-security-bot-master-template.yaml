@@ -13,6 +13,7 @@ Metadata:
           - S3BucketName
           - ECRImageURI
           - PluginNames
+          - CreateAccountLevelResource
       - Label:
           default: SecurityBot Configuration
         Parameters:
@@ -20,6 +21,8 @@ Metadata:
           - VpcCIDR
           - ElectricEyeScheduledSubnet1CIDR
           - ElectricEyeScheduledSubnet2CIDR
+          - ExecutionRoleArn 
+          - TaskRoleArn
     ParameterLabels:
       Environment:
         default: Environment Type such as Prod , QA , STG , DEV
@@ -39,8 +42,20 @@ Metadata:
         default: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
       CreateAccountLevelResource:
         default: To conditionally create ElectricEyeExecutionRole, ElectricEyeTaskRole
+      ExecutionRoleArn:
+       default: Arn of ElectricEye Execution Role
+      TaskRoleArn:
+       default: Arn of ElectricEye TaskRole
       
 Parameters:
+  ExecutionRoleArn:
+    Description: The Amazon Resource Name (ARN) of the task execution role that grants the Amazon ECS container agent permission to make AWS API calls on your behalf. 
+    Type: String
+    Default: ""
+  TaskRoleArn:
+    Description: The short name or full Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that grants containers in the task permission to call AWS APIs on your behalf
+    Type: String
+    Default: ""
   CreateAccountLevelResource:
     Description: 'Based on this field, IAM resources will create in the customer account'
     Type: String
@@ -436,10 +451,10 @@ Resources:
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: ecs
       Cpu: 2048
-      ExecutionRoleArn: !GetAtt 'ElectricEyeExecutionRole.Arn'
+      ExecutionRoleArn: !If [CreateAccountLevelResource, !GetAtt ElectricEyeExecutionRole.Arn, !Ref ExecutionRoleArn]
       Memory: 4096
       NetworkMode: awsvpc
-      TaskRoleArn: !GetAtt 'ElectricEyeTaskRole.Arn'
+      TaskRoleArn: !If [CreateAccountLevelResource, !GetAtt ElectricEyeTaskRole.Arn, !Ref TaskRoleArn] 
       Family: ElectricEye2SecurityHubTask
       RequiresCompatibilities:
         - FARGATE
@@ -450,7 +465,7 @@ Resources:
       State: ENABLED
       Targets:
         - Arn: !GetAtt 'ElectricEyeECSCluster.Arn'
-          RoleArn: !GetAtt 'ElectricEyeTaskRole.Arn'
+          RoleArn: !If [CreateAccountLevelResource, !GetAtt ElectricEyeTaskRole.Arn, !Ref TaskRoleArn]  
           Id: ElectricEyeTaskScheduler
           EcsParameters:
             TaskDefinitionArn: !Ref 'ElectricEyeECSTaskDefinition'
@@ -484,12 +499,14 @@ Outputs:
   ECSTaskDefinition:
     Description: Task Definition of Security Bot
     Value: !Ref 'ElectricEyeECSTaskDefinition'
-  SecurityBotExecutionRole:
+  ElectricEyeExecutionRole:
     Description: Arn of Execution Role
-    Value: !GetAtt 'ElectricEyeExecutionRole.Arn'
-  SecurityBotTaskRole:
+    Condition: CreateAccountLevelResource
+    Value: !GetAtt 'ElectricEyeExecutionRole.Arn'  
+  ElectricEyeTaskRole:
     Description: Arn of Task Role
-    Value: !GetAtt 'ElectricEyeTaskRole.Arn'
+    Condition: CreateAccountLevelResource
+    Value: !GetAtt 'ElectricEyeTaskRole.Arn'   
   LaunchType:
     Description: Launch Type
     Value: FARGATE
