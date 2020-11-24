@@ -14,7 +14,7 @@ Metadata:
           - ECRImageURI
           - PluginNames
       - Label:
-          default: SecurityBot Configuration
+          default: Day2 SecurityBot Configuration
         Parameters:
           - ScheduleExpression
           - VpcCIDR
@@ -67,7 +67,7 @@ Parameters:
     Default: rate(12 hours)
   ECRImageURI:
     Type: String
-    Description: ECR URI of the SecurityBot container
+    Description: ECR URI of the Day2 SecurityBot container
   VpcCIDR:
     Description: Please enter the IP range (CIDR notation) for this VPC
     Type: String
@@ -107,7 +107,7 @@ Resources:
     Properties:
       InternetGatewayId: !Ref 'InternetGateway'
       VpcId: !Ref 'VPC'
-  SecurityBotScheduledSubnet1:
+  Day2SecurityBotScheduledSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref 'VPC'
@@ -119,7 +119,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${Environment} Public Subnet (AZ1)'
-  SecurityBotScheduledSubnet2:
+  Day2SecurityBotScheduledSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref 'VPC'
@@ -149,13 +149,13 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref 'PublicRouteTable'
-      SubnetId: !Ref 'SecurityBotScheduledSubnet1'
+      SubnetId: !Ref 'Day2SecurityBotScheduledSubnet1'
   Day2SecurityBotScheduledSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref 'PublicRouteTable'
-      SubnetId: !Ref 'SecurityBotScheduledSubnet2'
-  SecurityBotS3VpcEndpoint:
+      SubnetId: !Ref 'Day2SecurityBotScheduledSubnet2'
+  Day2SecurityBotS3VpcEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       VpcEndpointType: Gateway
@@ -163,22 +163,22 @@ Resources:
         - !Ref 'PublicRouteTable'
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
       VpcId: !Ref 'VPC'
-  SecurityBotEcrDkrEndpoint:
+  Day2SecurityBotEcrDkrEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
       SecurityGroupIds:
-        - !Ref 'SecurityBotSecurityGroup'
+        - !Ref 'Day2SecurityBotSecurityGroup'
       SubnetIds:
-        - !Ref 'SecurityBotScheduledSubnet1'
-        - !Ref 'SecurityBotScheduledSubnet2'
+        - !Ref 'Day2SecurityBotScheduledSubnet1'
+        - !Ref 'Day2SecurityBotScheduledSubnet2'
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ecr.dkr'
       VpcId: !Ref 'VPC'
-  SecurityBotSecurityGroup:
+  Day2SecurityBotSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: SecurityBot Security Group
+      GroupName: Day2SecurityBot Security Group
       GroupDescription: Security group with HTTPS for Electric Eye Fargate
       VpcId: !Ref 'VPC'
       SecurityGroupIngress:
@@ -192,28 +192,28 @@ Resources:
           FromPort: 0
           ToPort: 65535
           CidrIp: '0.0.0.0/0'
-  SecurityBotECSCloudWatchLogsGroup:
+  Day2SecurityBotECSCloudWatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join
         - '-'
-        - - SecurityBot
+        - - Day2SecurityBot
           - !Ref 'AWS::StackName'
       RetentionInDays: 90
-  SecurityBotECSCluster:
+  Day2SecurityBotECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: SecurityBotCluster
+      ClusterName: Day2SecurityBotCluster
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
 
-  SecurityBotECSTaskDefinition:
+  Day2SecurityBotECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Image: !Ref 'ECRImageURI'
-          Name: SecurityBot
+          Name: Day2SecurityBot
           Environment:
             - Name: SH_SCRIPTS_BUCKET
               Value: !Ref 'S3BucketName'
@@ -222,7 +222,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Ref 'SecurityBotECSCloudWatchLogsGroup'
+              awslogs-group: !Ref 'Day2SecurityBotECSCloudWatchLogsGroup'
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: ecs
       Cpu: 2048
@@ -230,20 +230,20 @@ Resources:
       Memory: 4096
       NetworkMode: awsvpc
       TaskRoleArn: !Ref TaskRoleArn
-      Family: SecurityBot2SecurityHubTask
+      Family: Day2SecurityBot2SecurityHubTask
       RequiresCompatibilities:
         - FARGATE
-  SecurityBotTaskScheduler:
+  Day2SecurityBotTaskScheduler:
     Type: AWS::Events::Rule
     Properties:
       ScheduleExpression: !Ref 'ScheduleExpression'
       State: ENABLED
       Targets:
-        - Arn: !GetAtt 'SecurityBotECSCluster.Arn'
+        - Arn: !GetAtt 'Day2SecurityBotECSCluster.Arn'
           RoleArn: !Ref TaskRoleArn
-          Id: SecurityBotTaskScheduler
+          Id: Day2SecurityBotTaskScheduler
           EcsParameters:
-            TaskDefinitionArn: !Ref 'SecurityBotECSTaskDefinition'
+            TaskDefinitionArn: !Ref 'Day2SecurityBotECSTaskDefinition'
             TaskCount: 1
             LaunchType: FARGATE
             PlatformVersion: LATEST
@@ -251,10 +251,10 @@ Resources:
               AwsVpcConfiguration:
                 AssignPublicIp: ENABLED
                 SecurityGroups:
-                  - !Ref 'SecurityBotSecurityGroup'
+                  - !Ref 'Day2SecurityBotSecurityGroup'
                 Subnets:
-                  - !Ref 'SecurityBotScheduledSubnet1'
-                  - !Ref 'SecurityBotScheduledSubnet2'
+                  - !Ref 'Day2SecurityBotScheduledSubnet1'
+                  - !Ref 'Day2SecurityBotScheduledSubnet2'
 Outputs:
   StackName:
     Description: Stack name.
@@ -264,16 +264,16 @@ Outputs:
     Value: !Ref 'VPC'
   SubnetId1:
     Description: Subnet Id 1
-    Value: !Ref 'SecurityBotScheduledSubnet1'
+    Value: !Ref 'Day2SecurityBotScheduledSubnet1'
   SubnetId2:
     Description: Subnet Id 1
-    Value: !Ref 'SecurityBotScheduledSubnet2'
+    Value: !Ref 'Day2SecurityBotScheduledSubnet2'
   SecurityGroupId:
-    Description: Security Group Id of Security Bot
-    Value: !Ref 'SecurityBotSecurityGroup'
+    Description: Security Group Id of Day2 Security Bot
+    Value: !Ref 'Day2SecurityBotSecurityGroup'
   ECSTaskDefinition:
-    Description: Task Definition of Security Bot
-    Value: !Ref 'SecurityBotECSTaskDefinition'
+    Description: Task Definition of Day2 Security Bot
+    Value: !Ref 'Day2SecurityBotECSTaskDefinition'
   LaunchType:
     Description: Launch Type
     Value: FARGATE
@@ -285,4 +285,4 @@ Outputs:
     Value: !Ref 'S3BucketName'
   Cluster:
     Description: Cluster Name
-    Value: !Ref 'SecurityBotECSCluster'
+    Value: !Ref 'Day2SecurityBotECSCluster'
