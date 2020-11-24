@@ -2,6 +2,10 @@ import os
 import boto3
 import json
 import urllib3
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
@@ -13,7 +17,9 @@ def lambda_handler(event, context):
     # retrieve Teams webhook from SSM
     try:
         response = ssm.get_parameter(Name=webhookParam, WithDecryption=True)
-        teamsWebhook = str(response['Parameter']['Value'])
+        response_object = str(response['Parameter']['Value'])
+        response_object_dict = json.loads(response_object)
+        teams_hooks = response_object_dict.get('teams_hooks')
     except Exception as e:
         print(e)
     teamsHeaders = {'Content-Type': 'application/json'}
@@ -25,4 +31,6 @@ def lambda_handler(event, context):
             resourceId = str(resources['Id'])
             teamsMessage = 'A new ' + severityLabel + ' severity finding for ' + resourceId + ' in acccount ' + awsAccountId + ' has been created in Security Hub due to failing the check: ' + electricEyeCheck
             message = {'text': teamsMessage}
-            http.request('POST', teamsWebhook, headers=teamsHeaders, body=json.dumps(message).encode('utf-8'))
+            for webhook in teams_hooks:
+                status = http.request('POST', webhook, headers=teamsHeaders, body=json.dumps(message).encode('utf-8'))
+                logging.info(status)
