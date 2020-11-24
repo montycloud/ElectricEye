@@ -13,14 +13,13 @@ Metadata:
           - S3BucketName
           - ECRImageURI
           - PluginNames
-          - CreateAccountLevelResource
       - Label:
           default: SecurityBot Configuration
         Parameters:
           - ScheduleExpression
           - VpcCIDR
-          - ElectricEyeScheduledSubnet1CIDR
-          - ElectricEyeScheduledSubnet2CIDR
+          - Day2SecurityBotScheduledSubnet1CIDR
+          - Day2SecurityBotScheduledSubnet2CIDR
           - ExecutionRoleArn 
           - TaskRoleArn
     ParameterLabels:
@@ -36,16 +35,14 @@ Metadata:
         default: Plugin Names
       VpcCIDR:
         default: Please enter the IP range (CIDR notation) for this VPC
-      ElectricEyeScheduledSubnet1CIDR:
+      Day2SecurityBotScheduledSubnet1CIDR:
         default: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
-      ElectricEyeScheduledSubnet2CIDR:
+      Day2SecurityBotScheduledSubnet2CIDR:
         default: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
-      CreateAccountLevelResource:
-        default: To conditionally create ElectricEyeExecutionRole, ElectricEyeTaskRole
       ExecutionRoleArn:
-       default: Arn of ElectricEye Execution Role
+       default: Arn of Day2 SecurityBot Execution Role
       TaskRoleArn:
-       default: Arn of ElectricEye TaskRole
+       default: Arn of Day2 SecurityBot TaskRole
       
 Parameters:
   ExecutionRoleArn:
@@ -56,13 +53,6 @@ Parameters:
     Description: The short name or full Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that grants containers in the task permission to call AWS APIs on your behalf
     Type: String
     Default: ""
-  CreateAccountLevelResource:
-    Description: 'Based on this field, IAM resources will create in the customer account'
-    Type: String
-    Default: "false"
-    AllowedValues:
-      - "true"
-      - "false"
   Environment:
     Description: An environment name that is prefixed to resource names
     Type: String
@@ -77,7 +67,7 @@ Parameters:
     Default: rate(12 hours)
   ECRImageURI:
     Type: String
-    Description: ECR URI of the ElectricEye container
+    Description: ECR URI of the SecurityBot container
   VpcCIDR:
     Description: Please enter the IP range (CIDR notation) for this VPC
     Type: String
@@ -86,18 +76,16 @@ Parameters:
     Description: Names of auditors to be loaded during Fargate task run
     Type: String
     Default: 'Amazon_APIGW_Auditor,Amazon_S3_Auditor'
-  ElectricEyeScheduledSubnet1CIDR:
+  Day2SecurityBotScheduledSubnet1CIDR:
     Description: Please enter the IP range (CIDR notation) for the public subnet in
       the first Availability Zone
     Type: String
     Default: 10.77.10.0/24
-  ElectricEyeScheduledSubnet2CIDR:
+  Day2SecurityBotScheduledSubnet2CIDR:
     Description: Please enter the IP range (CIDR notation) for the public subnet in
       the second Availability Zone
     Type: String
     Default: 10.77.20.0/24
-Conditions:
-  CreateAccountLevelResource:  !Equals [ !Ref CreateAccountLevelResource, "true" ]
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -119,26 +107,26 @@ Resources:
     Properties:
       InternetGatewayId: !Ref 'InternetGateway'
       VpcId: !Ref 'VPC'
-  ElectricEyeScheduledSubnet1:
+  SecurityBotScheduledSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref 'VPC'
       AvailabilityZone: !Select
         - 0
         - !GetAZs ''
-      CidrBlock: !Ref 'ElectricEyeScheduledSubnet1CIDR'
+      CidrBlock: !Ref 'Day2SecurityBotScheduledSubnet1CIDR'
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub '${Environment} Public Subnet (AZ1)'
-  ElectricEyeScheduledSubnet2:
+  SecurityBotScheduledSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref 'VPC'
       AvailabilityZone: !Select
         - 1
         - !GetAZs ''
-      CidrBlock: !Ref 'ElectricEyeScheduledSubnet2CIDR'
+      CidrBlock: !Ref 'Day2SecurityBotScheduledSubnet2CIDR'
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -157,17 +145,17 @@ Resources:
       RouteTableId: !Ref 'PublicRouteTable'
       DestinationCidrBlock: '0.0.0.0/0'
       GatewayId: !Ref 'InternetGateway'
-  ElectricEyeScheduledSubnet1RouteTableAssociation:
+  Day2SecurityBotScheduledSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref 'PublicRouteTable'
-      SubnetId: !Ref 'ElectricEyeScheduledSubnet1'
-  ElectricEyeScheduledSubnet2RouteTableAssociation:
+      SubnetId: !Ref 'SecurityBotScheduledSubnet1'
+  Day2SecurityBotScheduledSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref 'PublicRouteTable'
-      SubnetId: !Ref 'ElectricEyeScheduledSubnet2'
-  ElectricEyeS3VpcEndpoint:
+      SubnetId: !Ref 'SecurityBotScheduledSubnet2'
+  SecurityBotS3VpcEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       VpcEndpointType: Gateway
@@ -175,22 +163,22 @@ Resources:
         - !Ref 'PublicRouteTable'
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
       VpcId: !Ref 'VPC'
-  ElectricEyeEcrDkrEndpoint:
+  SecurityBotEcrDkrEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
       SecurityGroupIds:
-        - !Ref 'ElectricEyeSecurityGroup'
+        - !Ref 'SecurityBotSecurityGroup'
       SubnetIds:
-        - !Ref 'ElectricEyeScheduledSubnet1'
-        - !Ref 'ElectricEyeScheduledSubnet2'
+        - !Ref 'SecurityBotScheduledSubnet1'
+        - !Ref 'SecurityBotScheduledSubnet2'
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ecr.dkr'
       VpcId: !Ref 'VPC'
-  ElectricEyeSecurityGroup:
+  SecurityBotSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: ElectricEye Security Group
+      GroupName: SecurityBot Security Group
       GroupDescription: Security group with HTTPS for Electric Eye Fargate
       VpcId: !Ref 'VPC'
       SecurityGroupIngress:
@@ -204,241 +192,28 @@ Resources:
           FromPort: 0
           ToPort: 65535
           CidrIp: '0.0.0.0/0'
-  ElectricEyeECSCloudWatchLogsGroup:
+  SecurityBotECSCloudWatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join
         - '-'
-        - - ElectricEye
+        - - SecurityBot
           - !Ref 'AWS::StackName'
       RetentionInDays: 90
-  ElectricEyeECSCluster:
+  SecurityBotECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: ElectricEyeCluster
+      ClusterName: SecurityBotCluster
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
-  ElectricEyeTaskRole:   
-    Type: AWS::IAM::Role
-    Condition: CreateAccountLevelResource
-    Properties:
-      Policies:
-        - PolicyName: electriceyetaskpolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - access-analyzer:ListAnalyzers
-                  - apigateway:GET
-                  - appmesh:DescribeMesh
-                  - appmesh:DescribeVirtualNode
-                  - appmesh:ListMeshes
-                  - appmesh:ListVirtualNodes
-                  - appstream:DescribeFleets
-                  - appstream:DescribeImages
-                  - appstream:DescribeUsers
-                  - backup:DescribeProtectedResource
-                  - cloudformation:DescribeStacks
-                  - cloudfront:ListDistributions
-                  - cloudfront:GetDistribution
-                  - cloudtrail:DescribeTrails
-                  - cloudtrail:ListTrails
-                  - cloudwatch:GetMetricData
-                  - codebuild:BatchGetProjects
-                  - codebuild:ListProjects
-                  - cognito-idp:DescribeUserPool
-                  - cognito-idp:ListUserPools
-                  - detective:ListGraphs
-                  - dms:DescribeReplicationInstances
-                  - ds:DescribeDirectories
-                  - ds:ListLogSubscriptions
-                  - dynamodb:DescribeTable
-                  - dynamodb:ListTables
-                  - dynamodb:DescribeContinuousBackups
-                  - dynamodb:DescribeTimeToLive
-                  - ec2:DescribeAddresses
-                  - ec2:DescribeFlowLogs
-                  - ec2:DescribeImageAttribute
-                  - ec2:DescribeImages
-                  - ec2:DescribeInstanceAttribute
-                  - ec2:DescribeInstances
-                  - ec2:DescribeSecurityGroupReferences
-                  - ec2:DescribeSecurityGroups
-                  - ec2:DescribeSnapshotAttribute
-                  - ec2:DescribeSnapshots
-                  - ec2:DescribeVolumes
-                  - ec2:DescribeVpcs
-                  - ec2:GetEbsDefaultKmsKeyId
-                  - ec2:GetEbsEncryptionByDefault
-                  - ecs:ListClusters
-                  - ecs:DescribeClusters
-                  - ecr:DescribeImages
-                  - ecr:DescribeRepositories
-                  - ecr:GetLifecyclePolicy
-                  - ecr:GetRepositoryPolicy
-                  - eks:DescribeCluster
-                  - eks:ListClusters
-                  - elasticfilesystem:DescribeFileSystems
-                  - elasticache:DescribeCacheClusters
-                  - elasticloadbalancing:DescribeListeners
-                  - elasticloadbalancing:DescribeLoadBalancerAttributes
-                  - elasticloadbalancing:DescribeLoadBalancers
-                  - elasticmapreduce:DescribeCluster
-                  - elasticmapreduce:DescribeSecurityConfiguration
-                  - elasticmapreduce:GetBlockPublicAccessConfiguration
-                  - elasticmapreduce:ListClusters
-                  - es:DescribeElasticsearchDomain
-                  - es:ListDomainNames
-                  - firehose:DescribeDeliveryStream
-                  - firehose:ListDeliveryStreams
-                  - globalaccelerator:ListAccelerators
-                  - globalaccelerator:ListListeners
-                  - globalaccelerator:ListEndpointGroups
-                  - globalaccelerator:DescribeAcceleratorAttributes
-                  - glue:GetSecurityConfiguration
-                  - glue:GetResourcePolicy
-                  - glue:GetCrawler
-                  - glue:GetDataCatalogEncryptionSettings
-                  - glue:ListCrawlers
-                  - guardduty:ListDetectors
-                  - iam:GetAccountPasswordPolicy
-                  - iam:ListUsers
-                  - iam:ListAccessKeys
-                  - iam:ListMfaDevices
-                  - iam:ListUserPolicies
-                  - iam:ListAttachedUserPolicies
-                  - iam:ListServerCertificates
-                  - imagebuilder:ListImagePipelines
-                  - imagebuilder:GetImagePipeline
-                  - imagebuilder:ListImageRecipes
-                  - imagebuilder:GetImageRecipe
-                  - kafka:DescribeCluster
-                  - kafka:ListClusters
-                  - kinesis:DescribeStream
-                  - kinesis:ListStreams
-                  - kinesisanalyticsv2:ListApplications
-                  - kinesisanalyticsv2:DescribeApplication
-                  - kms:Decrypt
-                  - kms:DescribeKey
-                  - kms:GetKeyPolicy
-                  - kms:GetKeyRotationStatus
-                  - kms:ListAliases
-                  - kms:ListKeys
-                  - lambda:ListFunctions
-                  - license-manager:GetLicenseConfiguration
-                  - license-manager:ListLicenseConfigurations
-                  - macie2:GetMacieSession
-                  - managedblockchain:GetNetwork
-                  - managedblockchain:ListMembers
-                  - managedblockchain:ListNetworks
-                  - managedblockchain:GetNode
-                  - managedblockchain:GetMember
-                  - managedblockchain:ListNodes
-                  - mq:DescribeBroker
-                  - mq:ListBrokers
-                  - qldb:DescribeLedger
-                  - qldb:ListJournalS3Exports
-                  - qldb:ListLedgers
-                  - ram:GetResourceShares
-                  - rds:DescribeDBClusterParameterGroups
-                  - rds:DescribeDBClusterParameters
-                  - rds:DescribeDBClusters
-                  - rds:DescribeDBClusterSnapshotAttributes
-                  - rds:DescribeDBClusterSnapshots
-                  - rds:DescribeDBInstances
-                  - rds:DescribeDBParameterGroups
-                  - rds:DescribeDBParameters
-                  - rds:DescribeDBSnapshotAttributes
-                  - rds:DescribeDBSnapshots
-                  - redshift:DescribeClusters
-                  - redshift:DescribeLoggingStatus
-                  - route53:ListHostedZones
-                  - s3:GetBucketLogging
-                  - s3:GetBucketPolicy
-                  - s3:GetBucketPolicyStatus
-                  - s3:GetBucketVersioning
-                  - s3:GetAccountPublicAccessBlock
-                  - s3:GetEncryptionConfiguration
-                  - s3:GetLifecycleConfiguration
-                  - s3:GetObject
-                  - s3:ListAllMyBuckets
-                  - s3:ListBucket
-                  - sagemaker:DescribeEndpoint
-                  - sagemaker:DescribeModel
-                  - sagemaker:DescribeNotebookInstance
-                  - sagemaker:ListEndpoints
-                  - sagemaker:ListModels
-                  - sagemaker:ListNotebookInstances
-                  - secretsmanager:ListSecrets
-                  - securityhub:BatchImportFindings
-                  - securityhub:GetFindings
-                  - shield:DescribeDRTAccess
-                  - shield:DescribeProtection
-                  - shield:DescribeSubscription
-                  - sns:GetTopicAttributes
-                  - sns:ListSubscriptions
-                  - sns:ListSubscriptionsByTopic
-                  - sns:ListTopics
-                  - ssm:GetParameter
-                  - ssm:GetParameters
-                  - ssm:GetParametersByPath
-                  - ssm:DescribeInstanceAssociationsStatus
-                  - ssm:DescribeInstanceInformation
-                  - ssm:DescribeInstancePatches
-                  - ssm:DescribeInstancePatchStates
-                  - ssm:DescribeInstanceProperties
-                  - sts:GetCallerIdentity
-                  - sqs:ListQueues
-                  - sqs:GetQueueAttributes
-                  - workspaces:DescribeWorkspaceDirectories
-                  - workspaces:DescribeWorkspaces
-                Resource: '*'
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action:
-              - sts:AssumeRole
-  ElectricEyeExecutionRole: 
-    Type: AWS::IAM::Role
-    Condition: CreateAccountLevelResource
-    Properties:
-      Policies:
-        - PolicyName: electriceyeexecpolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ecr:GetAuthorizationToken
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:BatchGetImage
-                  - kms:Decrypt
-                  - kms:DescribeKey
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - ssm:GetParameter
-                  - ssm:GetParameters
-                Resource: '*'
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action:
-              - sts:AssumeRole
-  ElectricEyeECSTaskDefinition:
+
+  SecurityBotECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Image: !Ref 'ECRImageURI'
-          Name: ElectricEye
+          Name: SecurityBot
           Environment:
             - Name: SH_SCRIPTS_BUCKET
               Value: !Ref 'S3BucketName'
@@ -447,28 +222,28 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Ref 'ElectricEyeECSCloudWatchLogsGroup'
+              awslogs-group: !Ref 'SecurityBotECSCloudWatchLogsGroup'
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: ecs
       Cpu: 2048
-      ExecutionRoleArn: !If [CreateAccountLevelResource, !GetAtt ElectricEyeExecutionRole.Arn, !Ref ExecutionRoleArn]
+      ExecutionRoleArn: !Ref ExecutionRoleArn
       Memory: 4096
       NetworkMode: awsvpc
-      TaskRoleArn: !If [CreateAccountLevelResource, !GetAtt ElectricEyeTaskRole.Arn, !Ref TaskRoleArn] 
-      Family: ElectricEye2SecurityHubTask
+      TaskRoleArn: !Ref TaskRoleArn
+      Family: SecurityBot2SecurityHubTask
       RequiresCompatibilities:
         - FARGATE
-  ElectricEyeTaskScheduler:
+  SecurityBotTaskScheduler:
     Type: AWS::Events::Rule
     Properties:
       ScheduleExpression: !Ref 'ScheduleExpression'
       State: ENABLED
       Targets:
-        - Arn: !GetAtt 'ElectricEyeECSCluster.Arn'
-          RoleArn: !If [CreateAccountLevelResource, !GetAtt ElectricEyeTaskRole.Arn, !Ref TaskRoleArn]  
-          Id: ElectricEyeTaskScheduler
+        - Arn: !GetAtt 'SecurityBotECSCluster.Arn'
+          RoleArn: !Ref TaskRoleArn
+          Id: SecurityBotTaskScheduler
           EcsParameters:
-            TaskDefinitionArn: !Ref 'ElectricEyeECSTaskDefinition'
+            TaskDefinitionArn: !Ref 'SecurityBotECSTaskDefinition'
             TaskCount: 1
             LaunchType: FARGATE
             PlatformVersion: LATEST
@@ -476,10 +251,10 @@ Resources:
               AwsVpcConfiguration:
                 AssignPublicIp: ENABLED
                 SecurityGroups:
-                  - !Ref 'ElectricEyeSecurityGroup'
+                  - !Ref 'SecurityBotSecurityGroup'
                 Subnets:
-                  - !Ref 'ElectricEyeScheduledSubnet1'
-                  - !Ref 'ElectricEyeScheduledSubnet2'
+                  - !Ref 'SecurityBotScheduledSubnet1'
+                  - !Ref 'SecurityBotScheduledSubnet2'
 Outputs:
   StackName:
     Description: Stack name.
@@ -489,24 +264,16 @@ Outputs:
     Value: !Ref 'VPC'
   SubnetId1:
     Description: Subnet Id 1
-    Value: !Ref 'ElectricEyeScheduledSubnet1'
+    Value: !Ref 'SecurityBotScheduledSubnet1'
   SubnetId2:
     Description: Subnet Id 1
-    Value: !Ref 'ElectricEyeScheduledSubnet2'
+    Value: !Ref 'SecurityBotScheduledSubnet2'
   SecurityGroupId:
     Description: Security Group Id of Security Bot
-    Value: !Ref 'ElectricEyeSecurityGroup'
+    Value: !Ref 'SecurityBotSecurityGroup'
   ECSTaskDefinition:
     Description: Task Definition of Security Bot
-    Value: !Ref 'ElectricEyeECSTaskDefinition'
-  ElectricEyeExecutionRole:
-    Description: Arn of Execution Role
-    Condition: CreateAccountLevelResource
-    Value: !GetAtt 'ElectricEyeExecutionRole.Arn'  
-  ElectricEyeTaskRole:
-    Description: Arn of Task Role
-    Condition: CreateAccountLevelResource
-    Value: !GetAtt 'ElectricEyeTaskRole.Arn'   
+    Value: !Ref 'SecurityBotECSTaskDefinition'
   LaunchType:
     Description: Launch Type
     Value: FARGATE
@@ -518,4 +285,4 @@ Outputs:
     Value: !Ref 'S3BucketName'
   Cluster:
     Description: Cluster Name
-    Value: !Ref 'ElectricEyeECSCluster'
+    Value: !Ref 'SecurityBotECSCluster'
