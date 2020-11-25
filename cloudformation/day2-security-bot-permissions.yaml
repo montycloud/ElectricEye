@@ -4,6 +4,7 @@ Resources:
   securitybottaskrole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: MontyCloud-SecurityBotTaskRole
       Policies:
         - PolicyName: securitybottaskpolicy
           PolicyDocument:
@@ -187,6 +188,7 @@ Resources:
   securitybotexecutionrole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: MontyCloud-SecurityBotExecutionRole
       Policies:
         - PolicyName: securitybotexecpolicy
           PolicyDocument:
@@ -284,11 +286,11 @@ Resources:
             Action:
               - s3:GetObject
             Resource:
-              - arn:aws:s3:::mc-dev1-blueprints/securitybot/*
+              - arn:aws:s3:::mc-dev1-blueprints/bots/security_bot/*
   securitybotrole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: day2-securitybotrole
+      RoleName: MontyCloud-SecurityBotRole
       Path: /
       ManagedPolicyArns:
         - !Ref 'securitybotpolicy'
@@ -302,17 +304,15 @@ Resources:
                 - cloudformation.amazonaws.com
                 - ssm.amazonaws.com
 Outputs:
-  securitybotrole:
-    Description: Arn of MVCTemplateRole , Copy this value to later paste it at TextBox
-      of the Launch BluePrints wizard
+  SecurityBotRole:
+    Description: Arn of SecurityBotRole , Copy this value to later paste it at TextBox of the Launch BluePrints wizard
     Value: !GetAtt 'securitybotrole.Arn'
-  securitybotpolicy:
-    Description: Arn of securitybotpolicy , these are the permissions needed by the
-      Role assumed by the CloudFormation
+  SecurityBotPolicy:
+    Description: Arn of SecurityBotPolicy , these are the permissions needed by the Role assumed by the CloudFormation
     Value: !Ref 'securitybotpolicy'
-  securitybottaskrole:
-    Description: Arn of securitybottaskrole
+  SecurityBotTaskRole:
+    Description: Arn of SecurityBotTaskRole
     Value: !GetAtt 'securitybottaskrole.Arn'
-  securitybotexecutionrole:
-    Description: Arn of securitybotexecutionrole
+  SecurityBotExecutionRole:
+    Description: Arn of SecurityBotExecutionRole
     Value: !GetAtt  'securitybotexecutionrole.Arn'

@@ -1,10 +1,11 @@
-
+{
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "This template creates an IAM role for SecurityBot.",
     "Resources": {
         "securitybottaskrole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
+                "RoleName": "MontyCloud-SecurityBotTaskRole",
                 "Policies": [
                     {
                         "PolicyName": "securitybottaskpolicy",
@@ -204,6 +205,7 @@
         "securitybotexecutionrole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
+                "RoleName": "MontyCloud-SecurityBotExecutionRole",
                 "Policies": [
                     {
                         "PolicyName": "securitybotexecpolicy",
@@ -346,7 +348,7 @@
                                 "s3:GetObject"
                             ],
                             "Resource": [
-                                "arn:aws:s3:::mc-dev1-blueprints/securitybot/*"
+                                "arn:aws:s3:::mc-dev1-blueprints/bots/security_bot/*"
                             ]
                         }
                     ]
@@ -356,7 +358,7 @@
         "securitybotrole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
-                "RoleName": "day2-securitybotrole",
+                "RoleName": "MontyCloud-SecurityBotRole",
                 "Path": "/",
                 "ManagedPolicyArns": [
                     {
@@ -382,8 +384,8 @@
         }
     },
     "Outputs": {
-        "securitybotrole": {
-            "Description": "Arn of MVCTemplateRole , Copy this value to later paste it at TextBox of the Launch BluePrints wizard",
+        "SecurityBotRole": {
+            "Description": "Arn of SecurityBotRole , Copy this value to later paste it at TextBox of the Launch BluePrints wizard",
             "Value": {
                 "Fn::GetAtt": [
                     "securitybotrole",
@@ -391,14 +393,14 @@
                 ]
             }
         },
-        "securitybotpolicy": {
-            "Description": "Arn of securitybotpolicy , these are the permissions needed by the Role assumed by the CloudFormation",
+        "SecurityBotPolicy": {
+            "Description": "Arn of SecurityBotPolicy , these are the permissions needed by the Role assumed by the CloudFormation",
             "Value": {
                 "Ref": "securitybotpolicy"
             }
         },
-        "securitybottaskrole": {
-            "Description": "Arn of securitybottaskrole",
+        "SecurityBotTaskRole": {
+            "Description": "Arn of SecurityBotTaskRole",
             "Value": {
                 "Fn::GetAtt": [
                     "securitybottaskrole",
@@ -406,8 +408,8 @@
                 ]
             }
         },
-        "securitybotexecutionrole": {
-            "Description": "Arn of securitybotexecutionrole",
+        "SecurityBotExecutionRole": {
+            "Description": "Arn of SecurityBotExecutionRole",
             "Value": {
                 "Fn::GetAtt": [
                     "securitybotexecutionrole",

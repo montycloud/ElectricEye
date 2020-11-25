@@ -202,10 +202,10 @@ Resources:
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: ecs
       Cpu: 2048
-      ExecutionRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/securitybotexecutionrole'
+      ExecutionRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotExecutionRole'
       Memory: 4096
       NetworkMode: awsvpc
-      TaskRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/securitybottaskrole'
+      TaskRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotTaskRole'
       Family: Day2SecurityBot2SecurityHubTask
       RequiresCompatibilities:
         - FARGATE
@@ -216,7 +216,7 @@ Resources:
       State: ENABLED
       Targets:
         - Arn: !GetAtt 'Day2SecurityBotECSCluster.Arn'
-          RoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/securitybottaskrole'
+          RoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotTaskRole'
           Id: Day2SecurityBotTaskScheduler
           EcsParameters:
             TaskDefinitionArn: !Ref 'Day2SecurityBotECSTaskDefinition'
