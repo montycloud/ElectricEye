@@ -202,7 +202,7 @@ Resources:
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: ecs
       Cpu: 2048
-      ExecutionRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotExecutionRole'
+      ExecutionRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotChatOpsExecRole'
       Memory: 4096
       NetworkMode: awsvpc
       TaskRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotTaskRole'

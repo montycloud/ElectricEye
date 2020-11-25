@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: This template creates an IAM role for SecurityBot.
 Resources:
+
   securitybottaskrole:
     Type: AWS::IAM::Role
     Properties:
@@ -215,6 +216,29 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action:
               - sts:AssumeRole
+  SecurityBotChatOpsExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: MontyCloud-SecurityBotChatOpsExecRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+      - PolicyName: MontyCloud-ChatOps-RolePolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            Resource: '*'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal: { Service: lambda.amazonaws.com }
+          Action:
+          - sts:AssumeRole
   securitybotpolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
