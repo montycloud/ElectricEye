@@ -1,12 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: This Template will create the supporting infrastructure for Day2 SecurityBot
+Description: This template will create the supporting infrastructure for Day2 SecurityBot
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
-      - Label:
-          default: Application Configuration
-        Parameters:
-          - Environment
       - Label:
           default: Artifacts Configuration
         Parameters:
@@ -20,11 +16,7 @@ Metadata:
           - VpcCIDR
           - Day2SecurityBotScheduledSubnet1CIDR
           - Day2SecurityBotScheduledSubnet2CIDR
-          - ExecutionRoleArn 
-          - TaskRoleArn
     ParameterLabels:
-      Environment:
-        default: Environment Type such as Prod , QA , STG , DEV
       S3BucketName:
         default: S3 Bucket to download Auditors python scripts
       ScheduleExpression:
@@ -39,24 +31,8 @@ Metadata:
         default: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
       Day2SecurityBotScheduledSubnet2CIDR:
         default: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
-      ExecutionRoleArn:
-       default: Arn of Day2 SecurityBot Execution Role
-      TaskRoleArn:
-       default: Arn of Day2 SecurityBot TaskRole
       
 Parameters:
-  ExecutionRoleArn:
-    Description: The Amazon Resource Name (ARN) of the task execution role that grants the Amazon ECS container agent permission to make AWS API calls on your behalf. 
-    Type: String
-    Default: ""
-  TaskRoleArn:
-    Description: The short name or full Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that grants containers in the task permission to call AWS APIs on your behalf
-    Type: String
-    Default: ""
-  Environment:
-    Description: An environment name that is prefixed to resource names
-    Type: String
-    Default: dev
   S3BucketName:
     Type: String
     Description: Public S3 bucket which holds the artifacts python auditor scripts
@@ -95,13 +71,13 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: !Ref 'Environment'
+          Value: day2-security-bot
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref 'Environment'
+          Value: day2-security-bot
   InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -118,7 +94,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub '${Environment} Public Subnet (AZ1)'
+          Value: day2-security-bot Public Subnet (AZ1)
   Day2SecurityBotScheduledSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -130,14 +106,14 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub '${Environment} Public Subnet (AZ2)'
+          Value: day2-security-bot
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref 'VPC'
       Tags:
         - Key: Name
-          Value: !Sub '${Environment} Public Routes'
+          Value: day2-security-bot
   DefaultPublicRoute:
     Type: AWS::EC2::Route
     DependsOn: InternetGatewayAttachment
@@ -226,10 +202,10 @@ Resources:
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: ecs
       Cpu: 2048
-      ExecutionRoleArn: !Ref ExecutionRoleArn
+      ExecutionRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/securitybotexecutionrole'
       Memory: 4096
       NetworkMode: awsvpc
-      TaskRoleArn: !Ref TaskRoleArn
+      TaskRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/securitybottaskrole'
       Family: Day2SecurityBot2SecurityHubTask
       RequiresCompatibilities:
         - FARGATE
@@ -240,7 +216,7 @@ Resources:
       State: ENABLED
       Targets:
         - Arn: !GetAtt 'Day2SecurityBotECSCluster.Arn'
-          RoleArn: !Ref TaskRoleArn
+          RoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/securitybottaskrole'
           Id: Day2SecurityBotTaskScheduler
           EcsParameters:
             TaskDefinitionArn: !Ref 'Day2SecurityBotECSTaskDefinition'

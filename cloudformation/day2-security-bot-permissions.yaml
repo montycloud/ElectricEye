@@ -1,12 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: This Template will create the supporting infrastructure for Day2 SecurityBot
-
+Description: This template creates an IAM role for SecurityBot.
 Resources:
-  ElectricEyeTaskRole:
+  securitybottaskrole:
     Type: AWS::IAM::Role
     Properties:
       Policies:
-        - PolicyName: electriceyetaskpolicy
+        - PolicyName: securitybottaskpolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -185,11 +184,11 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action:
               - sts:AssumeRole
-  ElectricEyeExecutionRole:
+  securitybotexecutionrole:
     Type: AWS::IAM::Role
     Properties:
       Policies:
-        - PolicyName: electriceyeexecpolicy
+        - PolicyName: securitybotexecpolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -214,3 +213,106 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action:
               - sts:AssumeRole
+  securitybotpolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: This policy grants SecurityBot permissions
+      Path: /
+      ManagedPolicyName: securitybotpolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: STSPermissions
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource: '*'
+          - Sid: CFNPermissions
+            Effect: Allow
+            Action:
+              - cloudformation:DescribeStackResource
+              - cloudformation:CreateChangeSet
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:CreateStack
+              - cloudformation:DeleteStack
+              - cloudformation:ValidateTemplate
+              - cloudformation:DescribeStacks
+            Resource: '*'
+          - Sid: S3Permissions
+            Effect: Allow
+            Action:
+              - s3:*
+            Resource: '*'
+          - Sid: CloudWatchPermissions
+            Effect: Allow
+            Action:
+              - cloudwatch:*
+              - events:*
+            Resource: '*'
+          - Sid: IAMPermissions
+            Effect: Allow
+            Action:
+              - iam:*
+            Resource: '*'
+          - Sid: SNS
+            Effect: Allow
+            Action:
+              - sns:*
+            Resource: '*'
+          - Sid: ECS
+            Effect: Allow
+            Action:
+              - guardduty:*
+              - securityhub:*
+              - ecs:*
+              - ec2:*
+            Resource: '*'
+          - Sid: CloudwatchLogs
+            Effect: Allow
+            Action:
+              - logs:*
+            Resource: '*'
+          - Sid: ECRPermissions
+            Effect: Allow
+            Action:
+              - ecr:*
+            Resource: '*'
+          - Sid: S3CrossAccountPermission
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - arn:aws:s3:::mc-dev1-blueprints/securitybot/*
+  securitybotrole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: day2-securitybotrole
+      Path: /
+      ManagedPolicyArns:
+        - !Ref 'securitybotpolicy'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+                - ssm.amazonaws.com
+Outputs:
+  securitybotrole:
+    Description: Arn of MVCTemplateRole , Copy this value to later paste it at TextBox
+      of the Launch BluePrints wizard
+    Value: !GetAtt 'securitybotrole.Arn'
+  securitybotpolicy:
+    Description: Arn of securitybotpolicy , these are the permissions needed by the
+      Role assumed by the CloudFormation
+    Value: !Ref 'securitybotpolicy'
+  securitybottaskrole:
+    Description: Arn of securitybottaskrole
+    Value: !GetAtt 'securitybottaskrole.Arn'
+  securitybotexecutionrole:
+    Description: Arn of securitybotexecutionrole
+    Value: !GetAtt  'securitybotexecutionrole.Arn'
