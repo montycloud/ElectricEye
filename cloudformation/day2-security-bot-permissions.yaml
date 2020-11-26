@@ -248,6 +248,13 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+          - Sid: LambdaPermissions
+            Effect: Allow
+            Action:
+              - lambda:GetFunction
+              - lambda:CreateFunction
+              - lambda:DeleteFunction
+            Resource: '*'
           - Sid: STSPermissions
             Effect: Allow
             Action:
