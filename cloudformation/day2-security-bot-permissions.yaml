@@ -183,7 +183,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: ['ecs-tasks.amazonaws.com','events.amazonaws.com']
+              Service: ['ecs-tasks.amazonaws.com']
             Action:
               - sts:AssumeRole
   securitybotexecutionrole:
@@ -337,6 +337,7 @@ Resources:
               Service:
                 - cloudformation.amazonaws.com
                 - ssm.amazonaws.com
+                - events.amazonaws.com
 Outputs:
   SecurityBotRole:
     Description: Arn of SecurityBotRole , Copy this value to later paste it at TextBox of the Launch BluePrints wizard

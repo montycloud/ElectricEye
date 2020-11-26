@@ -193,8 +193,7 @@
                             "Effect": "Allow",
                             "Principal": {
                                 "Service": [
-                                    "ecs-tasks.amazonaws.com",
-                                    "events.amazonaws.com"
+                                    "ecs-tasks.amazonaws.com"
                                 ]
                             },
                             "Action": [
@@ -431,7 +430,8 @@
                             "Principal": {
                                 "Service": [
                                     "cloudformation.amazonaws.com",
-                                    "ssm.amazonaws.com"
+                                    "ssm.amazonaws.com",
+                                    "events.amazonaws.com"
                                 ]
                             }
                         }
