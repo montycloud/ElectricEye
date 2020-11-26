@@ -105,4 +105,6 @@ Resources:
               - "SecurityBotChatOpsLambdaFunction"
               - "Arn"
           Id: "SecurityBot_ChatOps_CWE"
+          Arn: "arn:aws:sns:us-east-1:568753834354:MontyCloud-Automation-Task-Notification-Topic" 
+          Id: "MontyCloud-Notification-Topic"
 
