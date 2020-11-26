@@ -304,7 +304,10 @@
                             "Action": [
                                 "lambda:GetFunction",
                                 "lambda:CreateFunction",
-                                "lambda:DeleteFunction"
+                                "lambda:DeleteFunction",
+                                "lambda:GetFunctionConfiguration",
+                                "lambda:AddPermission",
+                                "lambda:RemovePermission"
                             ],
                             "Resource": "*"
                         },

@@ -254,6 +254,9 @@ Resources:
               - lambda:GetFunction
               - lambda:CreateFunction
               - lambda:DeleteFunction
+              - lambda:GetFunctionConfiguration
+              - lambda:AddPermission
+              - lambda:RemovePermission
             Resource: '*'
           - Sid: STSPermissions
             Effect: Allow
