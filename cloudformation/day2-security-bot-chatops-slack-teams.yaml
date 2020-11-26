@@ -1,25 +1,33 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: This Template will create the supporting infrastructure for the ElectricEye-ChatOps module to send Security Hub findings to Slack
+Description: >-
+  This Template will create the supporting infrastructure for the
+  Day2-SecurityBot ChatOps module to send Security Hub findings to Slack and
+  Teams
 Metadata:
   License: GPL-3.0
 Parameters:
   NotificationParameters:
     Type: String
-    Description: The names of the SSM Parameter that contains the Slack App Webhook and Teams URL for SecurityBot-ChatOps
+    Description: >-
+      The names of the SSM Parameter that contains the Slack App Webhook and
+      Teams URL for SecurityBot-ChatOps
     Default: slackwebhookParam
   SeverityLevel:
     Type: CommaDelimitedList
-    Description: Choose among CRITICAL,HIGH,MEDIUM
+    Description: 'Choose among CRITICAL,HIGH,MEDIUM'
     Default: 'CRITICAL,HIGH,MEDIUM'
 Resources:
   SecurityBotChatOpsLambdaFunction:
-    Type: AWS::Lambda::Function
+    Type: 'AWS::Lambda::Function'
     Properties:
       FunctionName: SecurityBot-ChatOps
-      Description: Sends the results of high-severity SecurityBot findings to a Slack Channel - Managed by Day2
+      Description: >-
+        Sends the results of high-severity SecurityBot findings to a Slack
+        Channel - Managed by Day2
       Handler: index.lambda_handler
       MemorySize: 256
-      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotChatOpsExecRole'
+      Role: !Sub >-
+        arn:aws:iam::${AWS::AccountId}:role/MontyCloud-SecurityBotChatOpsExecRole
       Runtime: python3.7
       Timeout: 60
       Environment:
@@ -70,21 +78,23 @@ Resources:
                           status = http.request('POST', channel, headers=notification_headers, body=json.dumps(message).encode('utf-8'))
                           logger.info(status)
   SecurityBotChatOpsCWEPermissions:
-    Type: AWS::Lambda::Permission
+    Type: 'AWS::Lambda::Permission'
     Properties:
       FunctionName:
-        Ref: "SecurityBotChatOpsLambdaFunction"
-      Action: "lambda:InvokeFunction"
-      Principal: "events.amazonaws.com"
+        Ref: SecurityBotChatOpsLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: events.amazonaws.com
       SourceArn:
-        Fn::GetAtt:
-          - "SecurityBotChatOpsEventRule"
-          - "Arn"
+        'Fn::GetAtt':
+          - SecurityBotChatOpsEventRule
+          - Arn
   SecurityBotChatOpsEventRule:
-    Type: AWS::Events::Rule
+    Type: 'AWS::Events::Rule'
     Properties:
-      Name: SecurityBot-ChatOps-CWE
-      Description: "Sends the results of high-severity SecurityBot findings to a Slack Channel,Teams via Lambda"
+      Name: SecurityBot-ChatOps-EventRule
+      Description: >-
+        Sends the results of high-severity SecurityBot findings to a Slack
+        Channel,Teams via Lambda
       EventPattern:
         source:
           - aws.securityhub
@@ -97,14 +107,13 @@ Resources:
                 - Day2SecurityBot
             Severity:
               Label: !Ref SeverityLevel
-      State: "ENABLED"
+      State: ENABLED
       Targets:
-        -
-          Arn:
-            Fn::GetAtt:
-              - "SecurityBotChatOpsLambdaFunction"
-              - "Arn"
-          Id: "SecurityBot_ChatOps_CWE"
-          Arn: "arn:aws:sns:us-east-1:568753834354:MontyCloud-Automation-Task-Notification-Topic" 
-          Id: "MontyCloud-Notification-Topic"
-
+        - Arn:
+            'Fn::GetAtt':
+              - SecurityBotChatOpsLambdaFunction
+              - Arn
+          Id: SecurityBot_ChatOps_CWE
+        - Arn: !Sub >-
+            arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MontyCloud-Automation-Task-Notification-Topic
+          Id: MontyCloud-Notification-Topic
