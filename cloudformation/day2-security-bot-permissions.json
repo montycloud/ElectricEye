@@ -192,7 +192,10 @@
                         {
                             "Effect": "Allow",
                             "Principal": {
-                                "Service": "ecs-tasks.amazonaws.com"
+                                "Service": [
+                                    "ecs-tasks.amazonaws.com",
+                                    "events.amazonaws.com"
+                                ]
                             },
                             "Action": [
                                 "sts:AssumeRole"
