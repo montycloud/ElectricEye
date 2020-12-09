@@ -14,7 +14,7 @@ Parameters:
     Default: slackwebhookParam
   SeverityLevel:
     Type: CommaDelimitedList
-    Description: 'Choose among CRITICAL,HIGH,MEDIUM'
+    Description: 'Choose among CRITICAL,HIGH,MEDIUM,LOW and INFORMATIONAL'
     Default: 'CRITICAL,HIGH,MEDIUM,LOW,INFORMATIONAL'
 Resources:
   SecurityBotChatOpsLambdaFunction:
