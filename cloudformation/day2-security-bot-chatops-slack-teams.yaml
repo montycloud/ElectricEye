@@ -15,7 +15,7 @@ Parameters:
   SeverityLevel:
     Type: CommaDelimitedList
     Description: 'Choose among CRITICAL,HIGH,MEDIUM'
-    Default: 'CRITICAL,HIGH,MEDIUM'
+    Default: 'CRITICAL,HIGH,MEDIUM,LOW,INFORMATIONAL'
 Resources:
   SecurityBotChatOpsLambdaFunction:
     Type: 'AWS::Lambda::Function'
@@ -69,7 +69,8 @@ Resources:
                   'LOW': '#FFBF00',
                   'MEDIUM': '#F39C12',
                   'HIGH': '#E74C3C',
-                  'CRITICAL': '#A93226'
+                  'CRITICAL': '#A93226',
+                  'INFORMATIONAL': '#2ECC71'
               }
               for findings in event['detail']['findings']:
                   severityLabel = str(findings['Severity']['Label'])
