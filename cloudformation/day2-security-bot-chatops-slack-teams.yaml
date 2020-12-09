@@ -45,6 +45,7 @@ Resources:
           logger.setLevel(logging.INFO)
 
 
+
           def lambda_handler(event, context):
               # create ssm client
               ssm = boto3.client('ssm')
@@ -61,21 +62,46 @@ Resources:
                   slack_hooks = response_object_dict.get('slack_hooks')
                   teams_hooks = response_object_dict.get('teams_hooks')
               except Exception as e:
-                  logger.exception(e)
+                    logger.exception(e)
+
               notification_headers = {'Content-Type': 'application/json'}
+              color_progression = {
+                  'LOW': '#FFBF00',
+                  'MEDIUM': '#F39C12',
+                  'HIGH': '#E74C3C',
+                  'CRITICAL': '#A93226'
+              }
               for findings in event['detail']['findings']:
                   severityLabel = str(findings['Severity']['Label'])
+                  severityColor = color_progression.get(severityLabel,"#CACFD2")
                   electricEyeCheck = str(findings['Title'])
-                  awsAccountId = str(findings['AwsAccountId'])
+                  awsAccountId = str('*')+str(findings['AwsAccountId'])+str('*')
                   for resources in findings['Resources']:
-                      resourceId = str(resources['Id'])
-                      Message = 'A new ' + severityLabel + ' severity finding for ' + resourceId + ' in acccount ' + awsAccountId + ' has been created in Security Hub due to failing the check: ' + electricEyeCheck
-                      message = {'text': Message}
+                      resourceId = str('*')+str(resources['Id'])+str('*')
+                      Message = 'A new ' + severityLabel + ' severity finding for ' + resourceId + ' in account ' + awsAccountId + ' has been found failing the check: ' +electricEyeCheck
+                      slack_payload = {
+                          "username": "DRBOT",
+                          "text": "DAY2™ SecurityBot",
+                          "type": "plain_text",
+                          "attachments": [
+                              {
+                                  "color": severityColor,
+                                  "text": Message,
+                              }
+                          ]
+                      }
+                      teams_payload = {
+                          "title": "DAY2™ SecurityBot",
+                          "type": "plain_text",
+                           "text": Message,
+                          "themeColor": severityColor
+                      }
+
                       for webhook in slack_hooks:
-                          status = http.request('POST', webhook, headers=notification_headers, body=json.dumps(message).encode('utf-8'))
+                          status = http.request('POST', webhook, headers=notification_headers, body=json.dumps(slack_payload).encode('utf-8'))
                           logger.info(status)
                       for channel in teams_hooks:
-                          status = http.request('POST', channel, headers=notification_headers, body=json.dumps(message).encode('utf-8'))
+                          status = http.request('POST', channel, headers=notification_headers, body=json.dumps(teams_payload).encode('utf-8'))
                           logger.info(status)
   SecurityBotChatOpsCWEPermissions:
     Type: 'AWS::Lambda::Permission'
