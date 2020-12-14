@@ -29,12 +29,12 @@ def lambda_handler(event, context):
 
     notification_headers = {'Content-Type': 'application/json'}
     color_progression = {
-        'LOW': '#FFBF00',
+        'LOW': '#2E89CC',
         'MEDIUM': '#F39C12',
         'HIGH': '#E74C3C',
         'CRITICAL': '#A93226',
         'INFORMATIONAL': '#2ECC71'
-                        }
+            }
     for findings in event['detail']['findings']:
         if findings.get("Compliance").get("Status") == "FAILED":
             severityLabel = str(findings['Severity']['Label'])
