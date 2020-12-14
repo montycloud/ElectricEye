@@ -32,7 +32,8 @@ def lambda_handler(event, context):
         'LOW': '#FFBF00',
         'MEDIUM': '#F39C12',
         'HIGH': '#E74C3C',
-        'CRITICAL': '#A93226'
+        'CRITICAL': '#A93226',
+        'INFORMATIONAL': '#2ECC71'
     }
     for findings in event['detail']['findings']:
         severityLabel = str(findings['Severity']['Label'])
@@ -60,9 +61,19 @@ def lambda_handler(event, context):
                 "themeColor": severityColor
             }
 
-            for webhook in slack_hooks:
-                status = http.request('POST', webhook, headers=notification_headers, body=json.dumps(slack_payload).encode('utf-8'))
-                logger.info(status)
-            for channel in teams_hooks:
-                status = http.request('POST', channel, headers=notification_headers, body=json.dumps(teams_payload).encode('utf-8'))
-                logger.info(status)
+            for slackwebhook_object in slack_hooks:
+                for slackseverity in slackwebhook_object.get("severity"):
+                    if slackseverity == severityLabel:
+                        logger.info("slack severity match found " + str(slackwebhook_object.get("severity")) + " " + severityLabel)
+                        status = http.request('POST', slackwebhook_object.get("webhook"), headers=notification_headers, body=json.dumps(slack_payload).encode('utf-8'))
+                        logger.info(status)
+                    else:
+                        logger.info("severityLabel doesn't match the slack_hooks severity " + str(slackwebhook_object.get("severity")) + " " + severityLabel)
+            for teamhook_object in teams_hooks:
+                for teamsseverity in teamhook_object.get("severity"):
+                    if teamsseverity == severityLabel:
+                        logger.info("team severity match found "+ str(teamhook_object.get("severity")) +" " +severityLabel)
+                        status = http.request('POST', teamhook_object.get("webhook"), headers=notification_headers, body=json.dumps(teams_payload).encode('utf-8'))
+                        logger.info(status)
+                    else:
+                        logger.info("severityLabel doesn't match the teams_hooks severity " + str(teamhook_object.get("severity")) + " " + severityLabel)
