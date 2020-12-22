@@ -136,7 +136,7 @@ def cognitoidp_cis_password_check(
                         "Url": "https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-policies.html",
                     }
                 },
-                "ProductFields": {"Product Name": "DaySecurityBot"},
+                "ProductFields": {"Product Name": "Day2SecurityBot"},
                 "Resources": [
                     {
                         "Type": "AwsCognitoUserPool",
@@ -220,7 +220,7 @@ def cognitoidp_temp_password_check(
                         "Url": "https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-policies.html",
                     }
                 },
-                "ProductFields": {"Product Name": "DaySecurityBot"},
+                "ProductFields": {"Product Name": "Day2SecurityBot"},
                 "Resources": [
                     {
                         "Type": "AwsCognitoUserPool",
@@ -286,7 +286,7 @@ def cognitoidp_temp_password_check(
                         "Url": "https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-policies.html",
                     }
                 },
-                "ProductFields": {"Product Name": "DaySecurityBot"},
+                "ProductFields": {"Product Name": "Day2SecurityBot"},
                 "Resources": [
                     {
                         "Type": "AwsCognitoUserPool",
@@ -368,7 +368,7 @@ def cognitoidp_mfa_check(
                         "Url": "https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-mfa.html",
                     }
                 },
-                "ProductFields": {"Product Name": "DaySecurityBot"},
+                "ProductFields": {"Product Name": "Day2SecurityBot"},
                 "Resources": [
                     {
                         "Type": "AwsCognitoUserPool",
@@ -434,7 +434,7 @@ def cognitoidp_mfa_check(
                         "Url": "https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-mfa.html",
                     }
                 },
-                "ProductFields": {"Product Name": "DaySecurityBot"},
+                "ProductFields": {"Product Name": "Day2SecurityBot"},
                 "Resources": [
                     {
                         "Type": "AwsCognitoUserPool",
