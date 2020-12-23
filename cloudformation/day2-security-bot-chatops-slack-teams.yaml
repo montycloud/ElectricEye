@@ -55,12 +55,14 @@ Resources:
               # retrieve slack webhook from SSM
               slack_hooks = []
               teams_hooks = []
+              pagerduty_hooks = []
               try:
                   response = ssm.get_parameter(Name=notification_parameters, WithDecryption=True)
                   response_object = str(response['Parameter']['Value'])
                   response_object_dict = json.loads(response_object)
                   slack_hooks = response_object_dict.get('slack_hooks')
                   teams_hooks = response_object_dict.get('teams_hooks')
+                  pagerduty_integration_keys = response_object_dict.get('pagerduty_hooks')
               except Exception as e:
                     logger.exception(e)
 
@@ -72,6 +74,13 @@ Resources:
                   'CRITICAL': '#A93226',
                   'INFORMATIONAL': '#2ECC71'
                       }
+              pager_duty_severity = {
+                  'CRITICAL': 'critical',
+                  'HIGH': 'error',
+                  'MEDIUM': 'warning',
+                  'LOW': 'warning',
+                  'INFORMATIONAL': 'info'
+                }
               for findings in event['detail']['findings']:
                   if findings.get("Compliance").get("Status") == "FAILED":
                       severityLabel = str(findings['Severity']['Label'])
@@ -98,6 +107,26 @@ Resources:
                                "text": Message,
                               "themeColor": severityColor
                           }
+                          pagerdutyEvent = {
+                              "payload": {
+                                  "summary": 'AWS account ' + awsAccountId + ' has failed DAY2™ check ' + electricEyeCheck,
+                                  "source": "DAY2™",
+                                  "severity": pager_duty_severity.get(severityLabel),
+                                  "component": resourceId,
+                                  "class": "Security Hub Finding",
+                                  "custom_details": {
+                                      "finding_description": findingDescription,
+                                      "aws_account_id": awsAccountId,
+                                      "security_hub_severity": severityLabel,
+                                      "remediation_text": remediationReccText,
+                                      "remediation_url": remediationReccUrl,
+                                      "resource_type": resourceType
+                                  }
+                              },
+                              "dedup_key": findingId,
+                              "event_action": "trigger"
+                              }
+                          pdEventApiv2Url = 'https://events.pagerduty.com/v2/enqueue'
 
                           for slackwebhook_object in slack_hooks:
                               for slackseverity in slackwebhook_object.get("severity"):
@@ -115,6 +144,19 @@ Resources:
                                       logger.info(status)
                                   else:
                                       logger.info("severityLabel doesn't match the teams_hooks severity " + str(teamhook_object.get("severity")) + " " + severityLabel)
+
+                          for pagerduty_object in pagerduty_integration_keys:
+                              pdHeaders = {
+                                  'Content-Type': 'application/json',
+                                  'X-Routing-Key': pagerduty_object.get("integration_key")
+                                          }
+                              for pdseverity in pagerduty_object.get("severity"):
+                                  if pdseverity == severityLabel:
+                                     logger.info(str(pagerduty_object.get("severity")) + " " + severityLabel)
+                                     status = http.request('POST', pdEventApiv2Url, headers=pdHeaders, body=json.dumps(pagerdutyEvent).encode('utf-8'))
+                                     logger.info(status)
+                                  else:
+                                      logger.info("severityLabel doesn't match the pagerduty severity " + str(pagerduty_object.get("severity")) + " " + severityLabel)
                   else:
                       logger.info("Compliance Status is either failed or None "+findings.get("Compliance").get("Status"))
   SecurityBotChatOpsCWEPermissions:

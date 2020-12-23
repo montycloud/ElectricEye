@@ -231,6 +231,7 @@ Resources:
             Action:
             - ssm:GetParameter
             - ssm:GetParameters
+            - kms:Decrypt
             Resource: '*'
       AssumeRolePolicyDocument:
         Version: 2012-10-17
