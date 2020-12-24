@@ -56,6 +56,7 @@ Resources:
                   response_object_dict = json.loads(response_object)
                   slack_hooks = response_object_dict.get('slack_hooks')
                   teams_hooks = response_object_dict.get('teams_hooks')
+
               except Exception as e:
                     logger.exception(e)
 
@@ -98,14 +99,14 @@ Resources:
                               "themeColor": severityColor
                           }
                           for slackwebhook_object in slack_hooks:
-                              if slackseverity in slackwebhook_object.get("severity"):
+                              if severityLabel in slackwebhook_object.get("severity"):
                                   logger.info("slack severity match found " + str(slackwebhook_object.get("severity")) + " " + severityLabel)
                                   status = http.request('POST', slackwebhook_object.get("webhook"), headers=notification_headers, body=json.dumps(slack_payload).encode('utf-8'))
                                   logger.info(status)
                               else:
                                     logger.info("severityLabel doesn't match the slack_hooks severity " + str(slackwebhook_object.get("severity")) + " " + severityLabel)
                           for teamhook_object in teams_hooks:
-                              if teamsseverity in teamhook_object.get("severity"):
+                              if severityLabel in teamhook_object.get("severity"):
                                  logger.info("team severity match found "+ str(teamhook_object.get("severity")) +" " +severityLabel)
                                  status = http.request('POST', teamhook_object.get("webhook"), headers=notification_headers, body=json.dumps(teams_payload).encode('utf-8'))
                                  logger.info(status)
@@ -164,7 +165,6 @@ Resources:
               for findings in event['detail']['findings']:
                   if findings.get("Compliance").get("Status") == "FAILED":
                       severityLabel = str(findings['Severity']['Label'])
-                      severityColor = color_progression.get(severityLabel,"#CACFD2")
                       electricEyeCheck = str(findings['Title'])
                       awsAccountId = str('*')+str(findings['AwsAccountId'])+str('*')
                       findingDescription = str(findings['Description'])
@@ -199,7 +199,7 @@ Resources:
                                   'Content-Type': 'application/json',
                                   'X-Routing-Key': pagerduty_object.get("integration_key")
                                           }
-                              if pdseverity in pagerduty_object.get("severity"):
+                              if severityLabel in pagerduty_object.get("severity"):
                                   logger.info(str(pagerduty_object.get("severity")) + " " + severityLabel)
                                   status = http.request('POST', pdEventApiv2Url, headers=pdHeaders, body=json.dumps(pagerdutyEvent).encode('utf-8'))
                                   logger.info(status)
