@@ -234,6 +234,17 @@ Resources:
         'Fn::GetAtt':
           - SecurityBotChatOpsEventRule
           - Arn
+  SecurityBotPagerDutyCWEPermissions:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: SecurityBotPagerDutyLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: events.amazonaws.com
+      SourceArn:
+        'Fn::GetAtt':
+          - SecurityBotChatOpsEventRule
+          - Arn
   SecurityBotChatOpsEventRule:
     Type: 'AWS::Events::Rule'
     Properties:
