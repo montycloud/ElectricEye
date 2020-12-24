@@ -78,6 +78,10 @@ Resources:
                       severityColor = color_progression.get(severityLabel,"#CACFD2")
                       electricEyeCheck = str(findings['Title'])
                       awsAccountId = str('*')+str(findings['AwsAccountId'])+str('*')
+                      findingDescription = str(findings['Description'])
+                      findingId = str(findings['Id'])
+                      remediationReccText = str(findings['Remediation']['Recommendation']['Text'])
+                      remediationReccUrl = str(findings['Remediation']['Recommendation']['Url'])
                       for resources in findings['Resources']:
                           resourceId = str('*')+str(resources['Id'])+str('*')
                           Message = 'A new ' + severityLabel + ' severity finding for ' + resourceId + ' in account ' + awsAccountId + ' has been found failing the check: ' +electricEyeCheck
@@ -178,6 +182,10 @@ Resources:
                       severityColor = color_progression.get(severityLabel,"#CACFD2")
                       electricEyeCheck = str(findings['Title'])
                       awsAccountId = str('*')+str(findings['AwsAccountId'])+str('*')
+                      findingDescription = str(findings['Description'])
+                      findingId = str(findings['Id'])
+                      remediationReccText = str(findings['Remediation']['Recommendation']['Text'])
+                      remediationReccUrl = str(findings['Remediation']['Recommendation']['Url'])
                       for resources in findings['Resources']:
                           resourceId = str('*')+str(resources['Id'])+str('*')
                           Message = 'A new ' + severityLabel + ' severity finding for ' + resourceId + ' in account ' + awsAccountId + ' has been found failing the check: ' +electricEyeCheck
