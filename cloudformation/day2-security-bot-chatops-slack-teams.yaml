@@ -44,15 +44,11 @@ Resources:
           logger = logging.getLogger()
           logger.setLevel(logging.INFO)
 
-
-
           def lambda_handler(event, context):
-              # create ssm client
               ssm = boto3.client('ssm')
-              # create env var for SSM Parameter containing Slack Webhook URL
+              logger.info(event)
               notification_parameters = os.environ['NOTIFICATION_PARAMETER']
               http = urllib3.PoolManager()
-              # retrieve slack webhook from SSM
               slack_hooks = []
               teams_hooks = []
               try:
@@ -149,6 +145,7 @@ Resources:
           logger.setLevel(logging.INFO)
 
           def lambda_handler(event, context):
+              logger.info(event)
               ssm = boto3.client('ssm')
               notification_parameters = os.environ['NOTIFICATION_PARAMETER']
               http = urllib3.PoolManager()
