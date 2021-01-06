@@ -267,7 +267,8 @@
                                     "Effect": "Allow",
                                     "Action": [
                                         "ssm:GetParameter",
-                                        "ssm:GetParameters"
+                                        "ssm:GetParameters",
+                                        "kms:Decrypt"
                                     ],
                                     "Resource": "*"
                                 }
