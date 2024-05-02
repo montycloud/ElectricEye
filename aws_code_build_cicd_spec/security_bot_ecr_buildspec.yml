@@ -1,0 +1,13 @@
+version: 0.2
+
+env:
+  variables:
+    DEPLOYMENT_STRATEGY: "ALL"
+
+phases:
+  build:
+    commands:
+      - echo $STAGE
+      - bash push_to_security_bot_ecr.sh $ACCOUNT_NUMBER $REGION
+    finally:
+      - echo Security Bot Image deployed successfully !
