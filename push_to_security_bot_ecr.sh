@@ -8,10 +8,10 @@ fi
 ACCOUNT_NUMBER="$1"
 REGION="$2"
 TAG_NAME="latest"
-ECR_REPO_NAME="securitybot"
+ECR_REPO_NAME="testsecuritybotupgrade"
 
 # Build the Docker image
-DOCKER_BUILD_CMD="docker build -t securitybot ."
+DOCKER_BUILD_CMD="docker build -t testsecuritybotupgrade ."
 echo "executing: $DOCKER_BUILD_CMD"
 $DOCKER_BUILD_CMD
 
@@ -19,7 +19,7 @@ $DOCKER_BUILD_CMD
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com
 
 # Tag the Docker image with the environment
-TAG_COMMAND="docker tag securitybot:latest $ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO_NAME:$TAG_NAME"
+TAG_COMMAND="docker tag testsecuritybotupgrade:latest $ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO_NAME:$TAG_NAME"
 
 echo "executing: $TAG_COMMAND"
 $TAG_COMMAND
