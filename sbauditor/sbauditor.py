@@ -59,7 +59,8 @@ class SBAuditor(object):
                     print(f"Failed to load plugin {plugin_name} with exception {e}")
 
     def get_regions(self, service):
-        paginator = ssm.get_paginator("get_parameters_by_path")
+        ssm_useast = boto3.client("ssm", region_name="us-east-1")
+        paginator = ssm_useast.get_paginator("get_parameters_by_path")
         response_iterator = paginator.paginate(
             Path=f"/aws/service/global-infrastructure/services/{service}/regions",
             PaginationConfig={"MaxItems": 1000, "PageSize": 10},
